@@ -45,7 +45,7 @@ const scrapeLogic = async (res) => {
     let contadorTd = 0;
     var conteudosTD = [];
     var conteudosTD2 = [];
-    var logStatement;
+    var logStatement = [];
     var logStatement2;
     var combina;
 
@@ -68,54 +68,67 @@ const scrapeLogic = async (res) => {
         
       }
     }
+    for(x = 1; x<16; x++){
 
-    for (const td of elementosTd) {
-      const textoTd = await page.evaluate(element => element.textContent.trim(), td);
+    
+      for (const td of elementosTd) {
+        
+        const textoTd = await page.evaluate(element => element.textContent.trim(), td);
 
-      if (textoTd === '1') {
-        encontrouNove = true;
-        contadorTd = 1; 
-      } else if (encontrouNove) {
-        contadorTd++;
+          if (textoTd == x) {
+            encontrouNove = true;
+            contadorTd = 1; 
 
-        if (contadorTd === 2) {
-          conteudosTD2.push(textoTd);  
+          } else if (encontrouNove) {
+            contadorTd++;
+
+            if (contadorTd === 2) {
+              conteudosTD2.push(textoTd);  
+                
+            }else if(contadorTd === 4){
+              conteudosTD2.push(textoTd);
+              break;
+
+            }
             
-        }else if(contadorTd === 4){
-          conteudosTD2.push(textoTd);
-          break; 
+          }
+      }
+    }
+    var i = 0;
+      for (y = 0; y < 16; y+= 2){
+        i++;
+
+        //console.log(y);
+        if (encontrouNove) {
+          if(conteudosTD2[y + 1] === 'Em aberto'){
+            logStatement.push("O " + i + "º candidato " + conteudosTD2[y] + " ainda não foi chamado!");
+            //console.log("O primeiro candidato "+ conteudosTD2[0] +" ainda não foi chamado!");
+          }else{
+            logStatement.push("O " + i + "º candidato " + conteudosTD2[y] + " foi chamado!");
+            //console.log("O primeiro candidato foi chamado!");
+          }
+        
+          if(conteudosTD[1] === 'Em aberto'){
+            logStatement2 = "Eu (" + conteudosTD[0] + ") ainda não fui chamado!";
+            //console.log("Eu (" + conteudosTD[0] + ") ainda não fui chamado!");
+          }else{
+            logStatement2 = "Parabéns " + conteudosTD[0] + "! Fui chamado!";
+            //console.log("Parabéns "+ conteudosTD[0]+ "! Fui chamado!");
+          }
+            
+        } else {
+          logStatement.push("O TD requerido não foi encontrado na página.");
+          //console.log('O TD requerido não foi encontrado na página.');
         }
         
-      }
+      //combina = logStatement +'\n'+ logStatement2;
+      //console.log(combina);
+      //res.send(combina);
+      
     }
-    
-    if (encontrouNove) {
-      
-      if(conteudosTD2[1] === 'Em aberto'){
-        logStatement = "O primeiro candidato "+ conteudosTD2[0] +" ainda não foi chamado!";
-        //console.log("O primeiro candidato "+ conteudosTD2[0] +" ainda não foi chamado!");
-      }else{
-        logStatement = "O primeiro "+ conteudosTD2[0] +" candidato foi chamado!";
-        //console.log("O primeiro candidato foi chamado!");
-      }
-      
-      if(conteudosTD[1] === 'Em aberto'){
-        logStatement2 = "Eu (" + conteudosTD[0] + ") ainda não fui chamado!";
-        //console.log("Eu (" + conteudosTD[0] + ") ainda não fui chamado!");
-      }else{
-        logStatement2 = "Parabéns "+ conteudosTD[0]+ "! Fui chamado!";
-        //console.log("Parabéns "+ conteudosTD[0]+ "! Fui chamado!");
-      }
-      
-    } else {
-      logStatement = "O TD requerido não foi encontrado na página.";
-      //console.log('O TD requerido não foi encontrado na página.');
-    }
-
-    combina = logStatement +'\n'+ logStatement2;
-    console.log(combina);
-    //res.send(combina);
-    res.send(`${logStatement}</br>${logStatement2}`);
+    var arrayQuebraLinha = logStatement.join('</br> \n');
+    console.log(arrayQuebraLinha);
+    res.send(`${arrayQuebraLinha}</br>${logStatement2}`);
   } catch (e) {
     console.error(e);
     res.send(`Something went wrong while running Puppeteer: ${e}`);
